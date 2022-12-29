@@ -11,9 +11,9 @@
 #define ROT_SENS_CHANNEL ADC_CHANNEL_0
 
 #define LED_GPIO 48 // GPIO of onboard addressable LED
-#define MAX_RGB_VAL 16 // maximum value of any RGB colour at once
+#define MAX_RGB_VAL 8 // maximum value of any RGB colour at once
 
-void convert_rotation_to_rgb(int rotation_val, int* red, int* blue, int* green);
+void convert_rotation_to_rgb(int rotation_val, int* red, int* green, int* blue);
 
 void app_main(void)
 {
@@ -47,38 +47,48 @@ void app_main(void)
 
         led_strip_set_pixel(led_strip, 0, red, green, blue);
         led_strip_refresh(led_strip);
-
-        ESP_LOGD(TAG, "%d degrees\n", rotation_val);
     }
 }
 
-void convert_rotation_to_rgb(int rotation_val, int* red, int* blue, int* green){ // function to convert linear rotation value into non-linear RGB value
-    
-    *red = MAX_RGB_VAL; // resetting RGB values 
-    *blue = 0;
-    *green = 0;
+void convert_rotation_to_rgb(int rotation_val, int* red, int* green, int* blue){ // function to convert linear rotation value into non-linear RGB value
 
-    for(int i = 0; i < (6*MAX_RGB_VAL)*rotation_val/MAX_ROTATION; i++){
-        
-        if(i < MAX_RGB_VAL){
-            (*green)++;
-        }
-        else if(i < 2*MAX_RGB_VAL){
-            (*red)--;
-        }
-        else if (i < 3*MAX_RGB_VAL){
-            (*blue)++;
-        }
-        else if( i < 4*MAX_RGB_VAL){
-            (*green)--;
-        }
-        else if ( i < 5*MAX_RGB_VAL){
-            (*red)++;
-        }
-        else{
-            (*blue)--;
-        }
+    int rgb_val = (6*MAX_RGB_VAL)*rotation_val/MAX_ROTATION; // converting rotation degrees into RGB sequence range (0 - 255*6)
+    int rgb_division = rgb_val/MAX_RGB_VAL; // int division to determine which step of non-linear aspect in RGB sequence 
+    int rgb_modulus = rgb_val%MAX_RGB_VAL; // getting remainder to modify an rgb colour
+
+    switch(rgb_division){
+        case 0:
+        case 6:
+            *red = MAX_RGB_VAL;
+            *green = rgb_modulus;
+            *blue = 0;
+            break;
+        case 1:
+            *red = MAX_RGB_VAL - rgb_modulus;
+            *green = MAX_RGB_VAL;
+            *blue = 0;
+            break;
+        case 2:
+            *red = 0;
+            *green = MAX_RGB_VAL;
+            *blue = rgb_modulus;
+            break;
+        case 3:
+            *red = 0;
+            *green = MAX_RGB_VAL - rgb_modulus;
+            *blue = MAX_RGB_VAL;
+            break;
+        case 4:
+            *red = rgb_modulus;
+            *green = 0;
+            *blue = MAX_RGB_VAL;
+            break;
+        case 5:
+            *red = MAX_RGB_VAL;
+            *green = 0;
+            *blue = MAX_RGB_VAL - rgb_modulus;
+            break;
     }
-    
+
     return;
 }
