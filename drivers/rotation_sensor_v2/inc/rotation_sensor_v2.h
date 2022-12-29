@@ -12,7 +12,7 @@
 // disabling Ultra Low Power mode on ADC
 #define ROTATION_ULP_MODE ADC_ULP_MODE_DISABLE
 
-#define MAX_ROTATION 3600 // maximum rotation of sensor in degrees
+#define MAX_ROTATION 3600.0 // maximum rotation of sensor in degrees
 #define MAX_ADC_OUTPUT 4095 // maximum value for adc as determined by resolution (2^12 - 1)
 
 typedef struct { // struct to store required data for rotation sensor reads
